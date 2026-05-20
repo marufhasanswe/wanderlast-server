@@ -31,13 +31,25 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/destinations/:id", async (req, res) => {
-      const { id } = req.params;
-      const result = await destinationCollection.findOne({
-        _id: new ObjectId(id),
-      });
-      res.send(result);
-    });
+    app.get(
+      "/destinations/:id",
+      (req, res, next) => {
+        const header = req.headers.authorization;
+        console.log(header);
+        if (header === "logged in") {
+          next();
+        } else {
+          res.status(401).json({ message: "Unauthorized" });
+        }
+      },
+      async (req, res) => {
+        const { id } = req.params;
+        const result = await destinationCollection.findOne({
+          _id: new ObjectId(id),
+        });
+        res.send(result);
+      },
+    );
 
     app.patch("/destinations/:id", async (req, res) => {
       const { id } = req.params;
